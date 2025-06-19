@@ -105,7 +105,7 @@ export interface GameFilter {
   position?: Position;
   result?: Game['result'];
   tagIncludes?: string[];                         // must include any of these tags
-  builds?: BuildFilter[];                            // nested builds filter
+  builds?: BuildEntry[];                            // nested builds filter
 }
 
 /**
