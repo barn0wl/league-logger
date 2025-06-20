@@ -32,11 +32,6 @@ const GameEntryDetails: React.FC<GameEntryDetailsProps> = ({ game }) => (
               ].map(it => it.name).join(', ')}
             </li>
             <li>Summoner Spells: {game.build.summonerSpells.map(s => s.name).join(', ')}</li>
-            {game.build.skillOrder && (
-              <li>
-                Skill Path: {game.build.skillOrder.sequence.map(s => s.name).join(' → ')}
-              </li>
-            )}
           </ul>
         </div>
         <div>

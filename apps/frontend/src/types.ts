@@ -1,4 +1,6 @@
 
+export type ViewKey = 'views' | 'games' | 'builds';
+
 /**--- Core Enums & Aliases --------------------------------------**/
 export type EloBracket =
   | "Iron" | "Bronze" | "Silver" | "Gold"
@@ -9,14 +11,18 @@ export type SummonerSpell = "Flash" | "Ignite" | "Smite" | "Teleport"
   | "Heal" | "Barrier" | "Exhaust" | "Ghost" | "Cleanse" | "Revive";
 
 
-/**--- Shared Reference for Lookup Entities ----------------------**/
+/**
+ * Shared reference for lookup entities.
+ */
 export interface ReferenceEntity {
   id: number | string;
   name: string;
   iconUrl?: string;   // optional if some have no icon
 }
 
-/**--- Build Details --------------------------------------------**/
+/**
+ * Data about the runepage that was used during a game.
+ */
 export interface RunePage {
   keystone: ReferenceEntity;
   runes: [ReferenceEntity, ReferenceEntity, ReferenceEntity,
@@ -24,23 +30,22 @@ export interface RunePage {
   shards: [ReferenceEntity, ReferenceEntity, ReferenceEntity];
 }
 
-export interface SkillOrder {
-  sequence: ReferenceEntity[];     // ordered array of skills, e.g. [Q,W,E,Q...]
-}
-
+/**
+ * Actual data of the build that was used during a game.
+ */
 export interface Build {
   runePage: RunePage;
   items: {
     starter: ReferenceEntity;
     boots: ReferenceEntity;
-    coreItems: [ReferenceEntity, ReferenceEntity, ReferenceEntity];  
+    coreItems: [ReferenceEntity, ReferenceEntity, ReferenceEntity]; 
     // ordered array   of ref entity, length 3, for first 3 core items
   };
   summonerSpells: [ReferenceEntity, ReferenceEntity];
-  skillOrder?: SkillOrder;
 }
 
 /**--- Game Record ----------------------------------------------**/
+
 export interface GameStats {
   kills: number;
   deaths: number;
@@ -66,18 +71,11 @@ export interface Game {
 }
 
 /**--- View Configuration ---------------------------------------**/
-export type SortOrder = "asc" | "desc";
-
-export interface SortParam {
-  field: ["date", "patch"];
-  order: SortOrder;
-}
 
 export interface ViewConfig {
   id: string;
   name?: string;
-  sorts: SortParam[];
-  filters: GameFilter;
+  filter: GameFilter;      // values of the filter object for this view
 }
 
 /**--- Build & Game Specific Filters -----------------------------**/
@@ -105,7 +103,7 @@ export interface GameFilter {
   position?: Position;
   result?: Game['result'];
   tagIncludes?: string[];                         // must include any of these tags
-  builds?: BuildEntry[];                            // nested builds filter
+  buildEntryIds?: string[];                  // array of strings linking to the buildEntries this filter object uses
 }
 
 /**
@@ -119,4 +117,11 @@ export interface BuildEntry {
     tags: string[];
     notes?: string;
     createdAt: string;
+}
+
+// To filter through the views List
+export interface ViewFilter {
+  championId?: ReferenceEntity["id"];
+  position?: string;
+  tagIncludes?: string[];
 }

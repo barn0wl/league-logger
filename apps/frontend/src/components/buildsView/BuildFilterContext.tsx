@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { BuildEntry, BuildFilter, ReferenceEntity } from '../../types';
 
-interface BuildFiltersProps {
+interface BuildFilterContextProps {
   buildEntries: BuildEntry[];
   filters: BuildFilter;
   onChange: (newFilters: BuildFilter) => void;
 }
 
-export const BuildFilterContext: React.FC<BuildFiltersProps> = ({ buildEntries, filters, onChange }) => {
+export const BuildFilterContext: React.FC<BuildFilterContextProps> = ({ buildEntries, filters, onChange }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeField, setActiveField] = useState<keyof BuildFilter | null>(null);
 

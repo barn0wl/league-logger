@@ -1,17 +1,27 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { BuildEntry, Game, GameFilter, ReferenceEntity } from '../../types';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { BuildEntry, GameFilter, ReferenceEntity } from '../../types';
+import { useGames } from '../../hooks/useGames';
+import { useBuilds } from '../../hooks/useBuilds';
 
 interface GameFilterContextProps {
-  games: Game[];
-  buildEntries: BuildEntry[];
   filters: GameFilter;
   onChange: (newFilters: GameFilter) => void;
 }
 
-export const GameFilterContext: React.FC<GameFilterContextProps> = ({ games, buildEntries, filters, onChange }) => {
+export const GameFilterContext: React.FC<GameFilterContextProps> = ({ filters, onChange }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<keyof GameFilter | null>(null);
   const [searchText, setSearchText] = useState('');
+  const [buildEntries, setBuildEntries] = useState<BuildEntry[]>([]);
+
+  const { games } = useGames();
+  const { getBuildEntries } = useBuilds();
+
+  useEffect(()=>{
+    getBuildEntries()
+    .then(setBuildEntries)
+    .catch(console.error);
+  }, [getBuildEntries])
 
   // Derive unique options from loaded games
   const accounts = useMemo(() => [...new Map(games.map(g => [g.account.id, g.account])).values()], [games]);
@@ -26,7 +36,7 @@ export const GameFilterContext: React.FC<GameFilterContextProps> = ({ games, bui
     { key: 'position', label: 'Position' },
     { key: 'patch', label: 'Patch' },
     { key: 'tagIncludes', label: 'Tags' },
-    { key: 'builds', label: 'Build Entries' },
+    { key: 'buildEntryIds', label: 'Build Entries' },
   ];
 
   // display current value
@@ -45,7 +55,8 @@ export const GameFilterContext: React.FC<GameFilterContextProps> = ({ games, bui
       case 'position': return positions.map(p => ({ id: p, name: p }));
       case 'patch': return patches.map(p => ({ id: p, name: p } as ReferenceEntity));
       case 'tagIncludes': return tags.map(t => ({ id: t, name: t } as ReferenceEntity));
-      case 'builds': return buildEntries.map(b => ({ id: b.id, name: b.name || b.id }));
+      // Build Entry options are pooled directly from the db
+      case 'buildEntryIds': return buildEntries.map(b => ({ id: b.id, name: b.name || b.id }));
       default: return [];
     }
   }, [accounts, champions, positions, patches, tags, buildEntries]);
@@ -55,8 +66,8 @@ export const GameFilterContext: React.FC<GameFilterContextProps> = ({ games, bui
     const next: GameFilter = { ...filters };
     if (key === 'tagIncludes') {
       next.tagIncludes = [...(filters.tagIncludes || []), String(value)];
-    } else if (key === 'builds') {
-      next.builds = [...(filters.builds || []), buildEntries.find(b => b.id === value)!];
+    } else if (key === 'buildEntryIds') {
+      next.buildEntryIds = [...(filters.buildEntryIds || []), value];
     } else {
       (next as any)[key] = value;
     }
@@ -69,7 +80,7 @@ export const GameFilterContext: React.FC<GameFilterContextProps> = ({ games, bui
   // remove build filter
   const removeBuild = (id: string) => {
     const next = { ...filters };
-    next.builds = (filters.builds || []).filter(b => b.id !== id);
+    next.buildEntryIds = (filters.buildEntryIds || []).filter(i => i !== id);
     onChange(next);
   };
 
@@ -93,7 +104,7 @@ export const GameFilterContext: React.FC<GameFilterContextProps> = ({ games, bui
                 </li>
               ))}
             </ul>
-          ) : activeFilter !== 'builds' ? (
+          ) : activeFilter !== 'buildEntryIds' ? (
             <ul>
               <li>
                 <button className="px-2 py-1 w-full text-left hover:bg-gray-100" onClick={() => setActiveFilter(null)}>
@@ -121,13 +132,13 @@ export const GameFilterContext: React.FC<GameFilterContextProps> = ({ games, bui
                 className="mt-2 mb-2 block w-full border rounded p-1"
               />
               <ul className="max-h-40 overflow-auto">
-                {getOptions('builds')
+                {getOptions('buildEntryIds')
                   .filter(opt => opt.name.toLowerCase().includes(searchText.toLowerCase()))
                   .map(opt => (
                     <li key={opt.id.toString()}>
                       <button
                         className="w-full text-left px-2 py-1 hover:bg-gray-100"
-                        onClick={() => applyFilter('builds', opt.id)}
+                        onClick={() => applyFilter('buildEntryIds', opt.id)}
                       >
                         {opt.name}
                       </button>
@@ -137,11 +148,11 @@ export const GameFilterContext: React.FC<GameFilterContextProps> = ({ games, bui
             </div>
           )}
           {/* show selected builds with remove buttons */}
-          {filters.builds && filters.builds.length > 0 && (
+          {filters.buildEntryIds && filters.buildEntryIds.length > 0 && (
             <div className="mt-2">
               <span className="text-sm font-medium">Selected Builds:</span>
               <ul className="space-y-1">
-                {filters.builds.map(b => (
+                {buildEntries.map(b => (
                   <li key={b.id} className="flex items-center space-x-2">
                     <span>{b.name || b.id}</span>
                     <button onClick={() => removeBuild(b.id)} className="text-red-500">×</button>

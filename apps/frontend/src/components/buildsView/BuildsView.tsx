@@ -1,25 +1,30 @@
-import React, { useState } from "react";
-import { BuildEntry, ReferenceEntity } from "../../types";
+import React, { useEffect, useState } from "react";
+import { BuildEntry, BuildFilter } from "../../types";
 import BuildEntryRow from "./BuildEntryRow";
 import BuildEntryDetails from "./BuildEntryDetails";
+import { useBuilds } from "../../hooks/useBuilds";
+import BuildFilterContext from "./BuildFilterContext";
 
-interface BuildViewProps {
-  buildEntries: BuildEntry[];
+interface BuildsViewProps {
   onAdd: () => void;
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
   onUpdate: (entry: BuildEntry) => void;
-  // Static options loaded from API
-  keystoneOptions: ReferenceEntity[];
-  runeOptions: ReferenceEntity[];
-  shardOptions: ReferenceEntity[];
-  itemOptions: ReferenceEntity[];
-  spellOptions: ReferenceEntity[];
 }
 
-export const BuildView: React.FC<BuildViewProps> = ({ buildEntries, onAdd, onDelete, onDuplicate, onUpdate,
-    keystoneOptions, runeOptions, shardOptions, itemOptions, spellOptions }) => {
+export const BuildsView: React.FC<BuildsViewProps> = ({ onAdd, onDelete, onDuplicate, onUpdate }) => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  //need all the build Entries saved in db
+  const [buildEntries, setBuildEntries] = useState<BuildEntry[]>([]);
+  const [filters, setFilters] = useState<BuildFilter>({}); // for BuildFilterContext
+  const { getBuildEntries } = useBuilds();
+
+    useEffect(()=>{
+      getBuildEntries()
+      .then(setBuildEntries)
+      .catch(console.error);
+    }, [getBuildEntries])
 
   const toggle = (id: string) => {
     setExpanded(prev => {
@@ -33,7 +38,15 @@ export const BuildView: React.FC<BuildViewProps> = ({ buildEntries, onAdd, onDel
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Builds</h2>
+        <div>
+          <h2 className="text-2xl font-bold">Builds</h2>
+          {/* BuildFilterContext goes here */}
+          <BuildFilterContext
+            buildEntries={buildEntries}
+            filters={filters}
+            onChange={setFilters}
+          />
+        </div>
         <button
           onClick={onAdd}
           className="px-3 py-1 bg-blue-500 text-white rounded"
@@ -69,11 +82,6 @@ export const BuildView: React.FC<BuildViewProps> = ({ buildEntries, onAdd, onDel
                     onDelete={onDelete}
                     onDuplicate={onDuplicate}
                     onUpdate={onUpdate}
-                    keystoneOptions={keystoneOptions}
-                    runeOptions={runeOptions}
-                    shardOptions={shardOptions}
-                    itemOptions={itemOptions}
-                    spellOptions={spellOptions}
                   />
                 )}
               </React.Fragment>
@@ -85,4 +93,4 @@ export const BuildView: React.FC<BuildViewProps> = ({ buildEntries, onAdd, onDel
   );
 };
 
-export default BuildView;
+export default BuildsView;

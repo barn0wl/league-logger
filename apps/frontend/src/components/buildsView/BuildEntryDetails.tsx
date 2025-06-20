@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BuildEntry, ReferenceEntity } from "../../types";
+import { BuildEntry } from "../../types";
 import BuildFilterEditor from "./BuildFilterEditor";
 
 interface BuildEntryDetailsProps {
@@ -9,17 +9,12 @@ interface BuildEntryDetailsProps {
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
   onUpdate: (entry: BuildEntry) => void;
-    // pass static options
-  keystoneOptions: ReferenceEntity[];
-  runeOptions: ReferenceEntity[];
-  shardOptions: ReferenceEntity[];
-  itemOptions: ReferenceEntity[];
-  spellOptions: ReferenceEntity[];
 }
 
-const BuildEntryDetails: React.FC<BuildEntryDetailsProps> = ({ entry, onDelete, onDuplicate, onUpdate, 
-    keystoneOptions, runeOptions, shardOptions, itemOptions, spellOptions }) => {
+const BuildEntryDetails: React.FC<BuildEntryDetailsProps> = ({ entry, onDelete, onDuplicate, onUpdate }) => {
   const [edited, setEdited] = useState(entry);
+
+
 
   const handleChange = (field: keyof BuildEntry, value: any) => {
     setEdited(prev => ({ ...prev, [field]: value }));
@@ -58,11 +53,6 @@ const BuildEntryDetails: React.FC<BuildEntryDetailsProps> = ({ entry, onDelete, 
             <BuildFilterEditor
               filter={edited.filter}
               onChange={newFilter => setEdited(prev => ({ ...prev, filter: newFilter }))}
-              keystoneOptions={keystoneOptions}
-              runeOptions={runeOptions}
-              shardOptions={shardOptions}
-              itemOptions={itemOptions}
-              spellOptions={spellOptions}
             />
           </div>
         </div>

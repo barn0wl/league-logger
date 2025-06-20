@@ -1,12 +1,12 @@
 import type { Game } from "../../types";
 
-interface GameEntryProps {
+interface GameEntryRowProps {
   game: Game;
   isExpanded: boolean;
   toggleExpand: (id: string) => void;
 }
 
-const GameEntry: React.FC<GameEntryProps> = ({ game, isExpanded, toggleExpand }) => {
+const GameEntryRow: React.FC<GameEntryRowProps> = ({ game, isExpanded, toggleExpand }) => {
     const kda = [game.stats.kills, game.stats.deaths, game.stats.assists]
       .join('/');
     return (
@@ -34,4 +34,4 @@ const GameEntry: React.FC<GameEntryProps> = ({ game, isExpanded, toggleExpand })
   );
 }
 
-export default GameEntry;
+export default GameEntryRow;

@@ -1,28 +1,21 @@
-import { BuildFilter, ReferenceEntity } from "../../types";
+import { useLeagueStaticData } from "../../hooks/useLeagueStaticData";
+import { BuildFilter } from "../../types";
 
 // Editor for BuildFilter
 interface BuildFilterEditorProps {
   filter: BuildFilter;
   onChange: (newFilter: BuildFilter) => void;
-  keystoneOptions: ReferenceEntity[];
-  runeOptions: ReferenceEntity[];
-  shardOptions: ReferenceEntity[];
-  itemOptions: ReferenceEntity[];
-  spellOptions: ReferenceEntity[];
 }
 
 const BuildFilterEditor: React.FC<BuildFilterEditorProps> = ({
   filter,
   onChange,
-  keystoneOptions,
-  runeOptions,
-  shardOptions,
-  itemOptions,
-  spellOptions,
 }) => {
   const updateField = <K extends keyof BuildFilter>(key: K, value: BuildFilter[K]) => {
     onChange({ ...filter, [key]: value });
   };
+
+    const {items, keystones, runes, shards, spells} = useLeagueStaticData();
 
   return (
     <div className="space-y-4">
@@ -34,7 +27,7 @@ const BuildFilterEditor: React.FC<BuildFilterEditorProps> = ({
           onChange={e => updateField('keystoneId', e.target.value || undefined)}
         >
           <option value="">— None —</option>
-          {keystoneOptions.map(r => (
+          {keystones.map(r => (
             <option key={r.id} value={r.id}>{r.name}</option>
           ))}
         </select>
@@ -54,7 +47,7 @@ const BuildFilterEditor: React.FC<BuildFilterEditorProps> = ({
               }}
             >
               <option value="">—</option>
-              {runeOptions.map(r => (
+              {runes.map(r => (
                 <option key={r.id} value={r.id}>{r.name}</option>
               ))}
             </select>
@@ -76,7 +69,7 @@ const BuildFilterEditor: React.FC<BuildFilterEditorProps> = ({
               }}
             >
               <option value="">—</option>
-              {shardOptions.map(s => (
+              {shards.map(s => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
@@ -91,7 +84,7 @@ const BuildFilterEditor: React.FC<BuildFilterEditorProps> = ({
           onChange={e => updateField('starterItemId', e.target.value || undefined)}
         >
           <option value="">— None —</option>
-          {itemOptions.map(it => (
+          {items.map(it => (
             <option key={it.id} value={it.id}>{it.name}</option>
           ))}
         </select>
@@ -104,7 +97,7 @@ const BuildFilterEditor: React.FC<BuildFilterEditorProps> = ({
           onChange={e => updateField('bootsItemId', e.target.value || undefined)}
         >
           <option value="">— None —</option>
-          {itemOptions.map(it => (
+          {items.map(it => (
             <option key={it.id} value={it.id}>{it.name}</option>
           ))}
         </select>
@@ -122,7 +115,7 @@ const BuildFilterEditor: React.FC<BuildFilterEditorProps> = ({
                 }}
             >
                 <option value="">— None —</option>
-                {itemOptions.map(it => (
+                {items.map(it => (
                 <option key={it.id} value={it.id}>{it.name}</option>
                 ))}
             </select>
@@ -143,7 +136,7 @@ const BuildFilterEditor: React.FC<BuildFilterEditorProps> = ({
               }}
             >
               <option value="">—</option>
-              {spellOptions.map(s => (
+              {spells.map(s => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
