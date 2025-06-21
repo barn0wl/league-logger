@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ViewConfig, ViewFilter } from "../../types";
 import { useViews } from "../../hooks/useViews";
 import ViewFilterContext from "./ViewFilterContext";
@@ -11,8 +11,13 @@ export const ViewsList: React.FC = () => {
   const [editName, setEditName] = useState('');
   const [viewFilters, setViewFilters] = useState<ViewFilter>({});
 
-  const {views, duplicateView, editViewName, deleteView} = useViews();
+  const {views, fetchViews, duplicateView, 
+    createView, editViewName, deleteView} = useViews();
   const navigate = useNavigate();
+
+  useEffect(()=> {
+    fetchViews();
+  }, [fetchViews])
 
   // Filter views by id or name and by viewFilters
   const filteredViews = useMemo(() => {
@@ -74,6 +79,12 @@ export const ViewsList: React.FC = () => {
         />
         <button onClick={handleClear} className="px-2 py-1 bg-gray-200 rounded">
           Clear
+        </button>
+        <button
+          onClick={() => createView()}
+          className="px-2 py-1 bg-green-500 text-white rounded"
+        >
+          Create
         </button>
       </div>
 

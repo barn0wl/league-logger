@@ -1,7 +1,6 @@
 import React from "react";
 import { useLeagueStaticData } from "../../hooks/useLeagueStaticData";
 
-
 const StaticDataSection: React.FC = () => {
 
   const {currentVersion, latestVersion, refreshStaticData, loading} = useLeagueStaticData();

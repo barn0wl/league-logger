@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CreateAccount, ReferenceEntity } from "../types";
+import { useServices } from "../providers/serviceProvider";
 
 export const useAccounts = () => {
 
+    const {accountService} = useServices();
     const [accounts, setAccounts] = useState<ReferenceEntity[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string|null>(null);
@@ -14,8 +16,8 @@ export const useAccounts = () => {
         setError(null);
     
         try {
-          // await service
-          setAccounts([]);
+          const data = await accountService.fetchAccounts();
+          setAccounts(data);
         } catch (e: any) {
           setError(e.message);
         } finally {
@@ -25,17 +27,19 @@ export const useAccounts = () => {
 
     useEffect( ()=> {
         fetchAccounts();
-    }, [fetchAccounts])
+    }, [fetchAccounts, accountService])
 
     // creates a new empty build entry
-    const addAccount = useCallback( async(_body: CreateAccount): Promise<void> => {
-        throw new Error('no implementaton');
-    }, []);
+    const addAccount = useCallback( async(body: CreateAccount): Promise<void> => {
+        await accountService.addAccount(body);
+        await fetchAccounts();
+    }, [accountService, fetchAccounts]);
 
     // creates a new empty build entry
-    const removeAccount = useCallback( async(_id: string): Promise<void> => {
-        throw new Error('no implementaton');
-    }, []);
+    const removeAccount = useCallback( async(id: string): Promise<void> => {
+        await accountService.removeAccount(id);
+        await fetchAccounts();
+    }, [accountService, fetchAccounts]);
 
     const memoizedAccounts = useMemo(()=>({
         accounts, loading, error, fetchAccounts,

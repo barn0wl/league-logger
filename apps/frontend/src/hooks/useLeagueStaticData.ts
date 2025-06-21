@@ -1,54 +1,60 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { ReferenceEntity } from "../types";
+import { useServices } from "../providers/serviceProvider";
 
 export const useLeagueStaticData = () => {
-
-    const [currentVersion, _setCurrentVersion] = useState<string|null>(null);
-    const [latestVersion, _setLatestVersion] = useState<string>('');
-    const [items, _setItems] = useState<ReferenceEntity[]>([]);
-    const [keystones, _setKeystones] = useState<ReferenceEntity[]>([]);
-    const [shards, _setShards] = useState<ReferenceEntity[]>([]);
-    const [runes, _setRunes] = useState<ReferenceEntity[]>([]);
-    const [spells, _setSpells] = useState<ReferenceEntity[]>([]);
-    const [champions, _setChampions] = useState<ReferenceEntity[]>([]);
+    const {leagueStaticService} = useServices();
+    const [currentVersion, setCurrentVersion] = useState<string|null>(null);
+    const [latestVersion, setLatestVersion] = useState<string>('');
+    const [items, setItems] = useState<ReferenceEntity[]>([]);
+    const [keystones, setKeystones] = useState<ReferenceEntity[]>([]);
+    const [shards, setShards] = useState<ReferenceEntity[]>([]);
+    const [runes, setRunes] = useState<ReferenceEntity[]>([]);
+    const [spells, setSpells] = useState<ReferenceEntity[]>([]);
+    const [champions, setChampions] = useState<ReferenceEntity[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string|null>(null);
 
     // Functions
+    const fetchCurrentVersion = useCallback(async (): Promise<void> => {
+      leagueStaticService.fetchCurrentVersion()
+      .then(setCurrentVersion);
+    }, [leagueStaticService])
 
-    const fetchCurrentVersion = useCallback(async (): Promise<string|null> => {
-      // fetch current version then setCurrentVersion
-      throw new Error('No implementation');
-    }, [])
-
-    const fetchLatestVersion = useCallback(async (): Promise<string|null> => {
-      // fetch latest ddragon version then setLatestVersion
-      throw new Error('No implementation');
-    }, [])
+    const fetchLatestVersion = useCallback(async (): Promise<void> => {
+      leagueStaticService.fetchLatestVersion()
+      .then(setLatestVersion);
+    }, [leagueStaticService])
 
     const fetchItems = useCallback(async (): Promise<void> => {
-      // fetch items data then setItems
-      }, []);
+      leagueStaticService.fetchItems()
+      .then(setItems);
+      }, [leagueStaticService]);
 
     const fetchKeystones = useCallback(async (): Promise<void> => {
-      // fetch Keystones data then setKeystones
-      }, []);
+      leagueStaticService.fetchKeystones()
+      .then(setKeystones);
+      }, [leagueStaticService]);
 
     const fetchRunes = useCallback(async (): Promise<void> => {
-      // fetch Runes data then setRunes
-      }, []);
+      leagueStaticService.fetchRunes()
+      .then(setRunes)
+      }, [leagueStaticService]);
 
     const fetchShards = useCallback(async (): Promise<void> => {
-      // fetch Shards data then setShards
-      }, []);
+      leagueStaticService.fetchShards()
+      .then(setShards);
+      }, [leagueStaticService]);
 
     const fetchSpells = useCallback(async (): Promise<void> => {
-      // fetch Spells data then setSpells
-      }, []);
+      leagueStaticService.fetchSpells()
+      .then(setSpells)
+      }, [leagueStaticService]);
 
     const fetchChampions = useCallback(async (): Promise<void> => {
-      // fetch Champions data then setChampions
-      }, []);
+      leagueStaticService.fetchChampions()
+      .then(setChampions)
+      }, [leagueStaticService]);
 
     // makes a call to the riot Api to fetch and store all static riot data
     const refreshStaticData = useCallback(async(): Promise<void> => {
@@ -76,7 +82,7 @@ export const useLeagueStaticData = () => {
 
     useEffect( ()=> {
         refreshStaticData();
-    }, [refreshStaticData])
+    }, [refreshStaticData, leagueStaticService])
 
     const memoizedStaticData = useMemo(()=>({
       currentVersion, items, keystones, shards,

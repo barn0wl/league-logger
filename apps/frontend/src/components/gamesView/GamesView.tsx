@@ -21,8 +21,12 @@ const GamesView: React.FC<GamesViewProps> = ({ id }) => {
   const [loadingView, setLoadingView] = useState(false);
 
   const { getBuildEntriesById } = useBuilds();
-  const { games } = useGames();
+  const { games, fetchGames } = useGames();
   const { fetchViewById } = useViews();
+
+  useEffect(()=> {
+    fetchGames();
+  }, [fetchGames]);
 
   // Fetch ViewConfig if id is provided
   useEffect(() => {

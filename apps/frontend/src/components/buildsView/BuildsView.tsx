@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BuildEntry, BuildFilter } from "../../types";
+import { BuildFilter } from "../../types";
 import BuildEntryRow from "./BuildEntryRow";
 import BuildEntryDetails from "./BuildEntryDetails";
 import { useBuilds } from "../../hooks/useBuilds";
@@ -7,17 +7,13 @@ import BuildFilterContext from "./BuildFilterContext";
 
 export const BuildsView: React.FC = () => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-
-  //need all the build Entries saved in db
-  const [buildEntries, setBuildEntries] = useState<BuildEntry[]>([]);
   const [filters, setFilters] = useState<BuildFilter>({}); // for BuildFilterContext
-  const { addBuildEntry, getBuildEntries } = useBuilds();
+  //need all the build Entries saved in db
+  const { buildEntries, addBuildEntry, fetchBuildEntries } = useBuilds();
 
     useEffect(()=>{
-      getBuildEntries()
-      .then(setBuildEntries)
-      .catch(console.error);
-    }, [getBuildEntries])
+      fetchBuildEntries();
+    }, [fetchBuildEntries])
 
   const toggle = (id: string) => {
     setExpanded(prev => {

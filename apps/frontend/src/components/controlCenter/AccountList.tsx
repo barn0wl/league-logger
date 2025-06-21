@@ -1,10 +1,14 @@
 import { useAccounts } from "../../hooks/useAccounts";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CreateAccount } from "../../types";
 
 const AccountList: React.FC = () => {
   const [accountBody, setAccountBody] = useState<CreateAccount>({ name: "", tag: "" });
-  const { accounts, addAccount, removeAccount } = useAccounts();
+  const { accounts, fetchAccounts, addAccount, removeAccount } = useAccounts();
+
+  useEffect(()=>{
+    fetchAccounts();
+  }, [fetchAccounts])
 
   return (
     <section className="border p-4 rounded mb-6">

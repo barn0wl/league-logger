@@ -12,16 +12,14 @@ export const GameFilterContext: React.FC<GameFilterContextProps> = ({ filters, o
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<keyof GameFilter | null>(null);
   const [searchText, setSearchText] = useState('');
-  const [buildEntries, setBuildEntries] = useState<BuildEntry[]>([]);
 
-  const { games } = useGames();
-  const { getBuildEntries } = useBuilds();
+  const { games, fetchGames } = useGames();
+  const { buildEntries, fetchBuildEntries } = useBuilds();
 
   useEffect(()=>{
-    getBuildEntries()
-    .then(setBuildEntries)
-    .catch(console.error);
-  }, [getBuildEntries])
+    fetchGames();
+    fetchBuildEntries();
+  }, [fetchBuildEntries, fetchGames])
 
   // Derive unique options from loaded games
   const accounts = useMemo(() => [...new Map(games.map(g => [g.account.id, g.account])).values()], [games]);

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { ViewConfig, ViewFilter } from "../../types";
 import { useGames } from "../../hooks/useGames";
 
@@ -15,7 +15,11 @@ const ViewFilterContext: React.FC<ViewFilterContextProps> = ({ onChange }) => {
 
   // Derive options from all views' filter fields
   // Optionally, you can use useGames() to get all possible champions/tags/positions
-  const { games } = useGames();
+  const { games, fetchGames } = useGames();
+
+  useEffect(()=>{
+    fetchGames();
+  }, [fetchGames])
 
   // Get all unique champions, positions, and tags from games (for better UX)
   const champions = useMemo(
