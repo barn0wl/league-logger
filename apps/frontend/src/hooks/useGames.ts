@@ -7,7 +7,10 @@ export const useGames = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string|null>(null);
 
-    const fetchGames = useCallback(async () => {
+    /** Fetches games from the database. The lookback arg determines how far back or
+     * how many games, we want to fetch.
+    */
+    const fetchGames = useCallback(async (_lookback: number): Promise<void> => {
         setLoading(true);
         setError(null);
     
@@ -22,7 +25,7 @@ export const useGames = () => {
       }, []);
 
     useEffect( ()=> {
-        fetchGames();
+        fetchGames(50);
     }, [fetchGames])
 
     return { games, loading, error, fetchGames }

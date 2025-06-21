@@ -1,21 +1,17 @@
 import { useState } from "react";
 import { BuildEntry } from "../../types";
 import BuildFilterEditor from "./BuildFilterEditor";
+import { useBuilds } from "../../hooks/useBuilds";
 
 interface BuildEntryDetailsProps {
   entry: BuildEntry;
   isExpanded: boolean;
-  onToggle: (id: string) => void;
-  onDelete: (id: string) => void;
-  onDuplicate: (id: string) => void;
-  onUpdate: (entry: BuildEntry) => void;
 }
 
-const BuildEntryDetails: React.FC<BuildEntryDetailsProps> = ({ entry, onDelete, onDuplicate, onUpdate }) => {
+const BuildEntryDetails: React.FC<BuildEntryDetailsProps> = ({ entry }) => {
   const [edited, setEdited] = useState(entry);
 
-
-
+  const {updateBuildEntry, duplicateBuildEntry, deleteBuildEntry} = useBuilds();
   const handleChange = (field: keyof BuildEntry, value: any) => {
     setEdited(prev => ({ ...prev, [field]: value }));
   };
@@ -58,19 +54,22 @@ const BuildEntryDetails: React.FC<BuildEntryDetailsProps> = ({ entry, onDelete, 
         </div>
         <div className="mt-4 flex space-x-2">
           <button
-            onClick={() => onUpdate(edited)}
+            onClick={() => updateBuildEntry(
+              edited.id,
+              edited
+            )}
             className="px-3 py-1 bg-blue-500 text-white rounded"
           >
             Save
           </button>
           <button
-            onClick={() => onDuplicate(entry.id)}
+            onClick={() => duplicateBuildEntry(entry.id)}
             className="px-3 py-1 bg-green-500 text-white rounded"
           >
             Duplicate
           </button>
           <button
-            onClick={() => onDelete(entry.id)}
+            onClick={() => deleteBuildEntry(entry.id)}
             className="px-3 py-1 bg-red-500 text-white rounded"
           >
             Delete

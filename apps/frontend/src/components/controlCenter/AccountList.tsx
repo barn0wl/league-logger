@@ -1,15 +1,10 @@
-import { ReferenceEntity } from "../../types";
+import { useAccounts } from "../../hooks/useAccounts";
 import React, { useState } from "react";
+import { CreateAccount } from "../../types";
 
-interface AccountListProps {
-  accounts: ReferenceEntity[];
-  onAddAccount: (accountName: string, accountTag: string) => void;
-  // onDeleteAccount will be passed later
-}
-
-const AccountList: React.FC<AccountListProps> = ({ accounts, onAddAccount }) => {
-  const [accountName, setAccountName] = useState("");
-  const [accountTag, setAccountTag] = useState("");
+const AccountList: React.FC = () => {
+  const [accountBody, setAccountBody] = useState<CreateAccount>({ name: "", tag: "" });
+  const { accounts, addAccount, removeAccount } = useAccounts();
 
   return (
     <section className="border p-4 rounded mb-6">
@@ -18,11 +13,10 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onAddAccount }) => 
         {accounts.map(acc => (
           <li key={acc.id} className="flex justify-between items-center">
             <span>{acc.name}</span>
-            {/* Delete button (functionality to be added later) */}
             <button
               className="ml-2 px-2 py-0.5 text-xs bg-red-500 text-white rounded"
               title="Delete"
-              // onClick={() => onDeleteAccount(acc.id)}
+              onClick={() => removeAccount(acc.id as string)}
               disabled
             >
               Delete
@@ -35,25 +29,24 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onAddAccount }) => 
           type="text"
           placeholder="Account name"
           className="border rounded px-2 py-1 flex-1"
-          value={accountName}
-          onChange={e => setAccountName(e.target.value)}
+          value={accountBody.name}
+          onChange={e => setAccountBody({ ...accountBody, name: e.target.value })}
         />
         <input
           type="text"
           placeholder="#tag"
           className="border rounded px-2 py-1 w-24"
-          value={accountTag}
-          onChange={e => setAccountTag(e.target.value)}
+          value={accountBody.tag}
+          onChange={e => setAccountBody({ ...accountBody, tag: e.target.value })}
         />
       </div>
       <button
         onClick={() => {
-          onAddAccount(accountName, accountTag);
-          setAccountName("");
-          setAccountTag("");
+          addAccount(accountBody);
+          setAccountBody({ name: "", tag: "" });
         }}
         className="px-4 py-2 bg-blue-600 text-white rounded"
-        disabled={!accountName || !accountTag}
+        disabled={!accountBody.name || !accountBody.tag}
       >
         Add Account
       </button>

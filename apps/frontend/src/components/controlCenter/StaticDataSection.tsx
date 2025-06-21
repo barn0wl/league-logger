@@ -1,13 +1,10 @@
 import React from "react";
+import { useLeagueStaticData } from "../../hooks/useLeagueStaticData";
 
-interface StaticDataSectionProps {
-  currentVersion: string | null;
-  latestVersion: string;
-  onRefresh: () => void;
-  loading: boolean;
-}
 
-const StaticDataSection: React.FC<StaticDataSectionProps> = ({ currentVersion, latestVersion, onRefresh, loading }) => {
+const StaticDataSection: React.FC = () => {
+
+  const {currentVersion, latestVersion, refreshStaticData, loading} = useLeagueStaticData();
   const upToDate = currentVersion === latestVersion;
 
   return (
@@ -20,7 +17,7 @@ const StaticDataSection: React.FC<StaticDataSectionProps> = ({ currentVersion, l
         Latest Available Version: <strong>{latestVersion}</strong>
       </p>
       <button
-        onClick={onRefresh}
+        onClick={()=>refreshStaticData()}
         disabled={loading || upToDate}
         className={`mt-2 px-4 py-2 rounded text-white ${loading ? 'bg-gray-400' : upToDate ? 'bg-green-600' : 'bg-blue-600'}`}
       >

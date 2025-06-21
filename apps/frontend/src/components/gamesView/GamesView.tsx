@@ -9,7 +9,7 @@ import { useGames } from "../../hooks/useGames";
 import { useViews } from "../../hooks/useViews";
 
 interface GamesViewProps {
-  id: string|null; // Optional view id
+  id: string|null; // Optional view id to know what view to access
 }
 
 const GamesView: React.FC<GamesViewProps> = ({ id }) => {

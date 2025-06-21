@@ -2,22 +2,17 @@ import { useMemo, useState } from "react";
 import { ViewConfig, ViewFilter } from "../../types";
 import { useViews } from "../../hooks/useViews";
 import ViewFilterContext from "./ViewFilterContext";
+import { useNavigate } from "react-router-dom";
 
-interface ViewsListProps {
-  onDuplicate: (view: ViewConfig) => void;
-  onEdit: (view: ViewConfig, newName: string) => void;
-  onOpen: (view: ViewConfig) => void;
-  onDelete: (view: ViewConfig) => void;
-}
-
-export const ViewsList: React.FC<ViewsListProps> = ({ onDuplicate, onEdit, onOpen, onDelete }) => {
+export const ViewsList: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [actionMenuId, setActionMenuId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [viewFilters, setViewFilters] = useState<ViewFilter>({});
 
-  const {views} = useViews();
+  const {views, duplicateView, editViewName, deleteView} = useViews();
+  const navigate = useNavigate();
 
   // Filter views by id or name and by viewFilters
   const filteredViews = useMemo(() => {
@@ -52,7 +47,7 @@ export const ViewsList: React.FC<ViewsListProps> = ({ onDuplicate, onEdit, onOpe
     };
 
     const saveEdit = (view: ViewConfig) => {
-        onEdit(view, editName);
+        editViewName(view.id, editName);
         setEditingId(null);
     };
 
@@ -136,7 +131,7 @@ export const ViewsList: React.FC<ViewsListProps> = ({ onDuplicate, onEdit, onOpe
                       <ul>
                         <li>
                           <button
-                            onClick={() => { onDuplicate(view); setActionMenuId(null); }}
+                            onClick={() => { duplicateView(view.id); setActionMenuId(null); }}
                             className="w-full text-left px-2 py-1 hover:bg-gray-100"
                           >
                             Duplicate
@@ -152,7 +147,10 @@ export const ViewsList: React.FC<ViewsListProps> = ({ onDuplicate, onEdit, onOpe
                         </li>
                         <li>
                           <button
-                            onClick={() => { onOpen(view); setActionMenuId(null); }}
+                            onClick={() => {
+                              navigate(`/games/${view.id}`);
+                              setActionMenuId(null);
+                            }}
                             className="w-full text-left px-2 py-1 hover:bg-gray-100"
                           >
                             Open
@@ -160,7 +158,7 @@ export const ViewsList: React.FC<ViewsListProps> = ({ onDuplicate, onEdit, onOpe
                         </li>
                         <li>
                           <button
-                            onClick={() => { onDelete(view); setActionMenuId(null); }}
+                            onClick={() => { deleteView(view.id); setActionMenuId(null); }}
                             className="w-full text-left px-2 py-1 hover:bg-gray-100 text-red-600"
                           >
                             Delete

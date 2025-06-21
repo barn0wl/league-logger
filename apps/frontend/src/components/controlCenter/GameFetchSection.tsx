@@ -1,12 +1,10 @@
 import React, { useState } from "react";
+import { useGames } from "../../hooks/useGames";
 
-interface GameFetchSectionProps {
-  onFetch: (options: { lookback: number }) => void;
-  loading: boolean;
-}
 
-const GameFetchSection: React.FC<GameFetchSectionProps> = ({ onFetch, loading }) => {
+const GameFetchSection: React.FC = () => {
   const [lookback, setLookback] = useState(100);
+  const {fetchGames, loading} = useGames();
 
   return (
     <section className="border p-4 rounded mb-6">
@@ -25,7 +23,7 @@ const GameFetchSection: React.FC<GameFetchSectionProps> = ({ onFetch, loading })
           </select>
         </label>
         <button
-          onClick={() => onFetch({ lookback })}
+          onClick={() => fetchGames(lookback)}
           disabled={loading}
           className={`px-4 py-2 rounded text-white ${loading ? 'bg-gray-400' : 'bg-blue-600'}`}
         >

@@ -5,20 +5,13 @@ import BuildEntryDetails from "./BuildEntryDetails";
 import { useBuilds } from "../../hooks/useBuilds";
 import BuildFilterContext from "./BuildFilterContext";
 
-interface BuildsViewProps {
-  onAdd: () => void;
-  onDelete: (id: string) => void;
-  onDuplicate: (id: string) => void;
-  onUpdate: (entry: BuildEntry) => void;
-}
-
-export const BuildsView: React.FC<BuildsViewProps> = ({ onAdd, onDelete, onDuplicate, onUpdate }) => {
+export const BuildsView: React.FC = () => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   //need all the build Entries saved in db
   const [buildEntries, setBuildEntries] = useState<BuildEntry[]>([]);
   const [filters, setFilters] = useState<BuildFilter>({}); // for BuildFilterContext
-  const { getBuildEntries } = useBuilds();
+  const { addBuildEntry, getBuildEntries } = useBuilds();
 
     useEffect(()=>{
       getBuildEntries()
@@ -48,7 +41,7 @@ export const BuildsView: React.FC<BuildsViewProps> = ({ onAdd, onDelete, onDupli
           />
         </div>
         <button
-          onClick={onAdd}
+          onClick={() => addBuildEntry()}
           className="px-3 py-1 bg-blue-500 text-white rounded"
         >
           Add Build
@@ -78,10 +71,6 @@ export const BuildsView: React.FC<BuildsViewProps> = ({ onAdd, onDelete, onDupli
                   <BuildEntryDetails
                     entry={entry}
                     isExpanded={isExpanded}
-                    onToggle={toggle}
-                    onDelete={onDelete}
-                    onDuplicate={onDuplicate}
-                    onUpdate={onUpdate}
                   />
                 )}
               </React.Fragment>

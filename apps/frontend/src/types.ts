@@ -1,14 +1,7 @@
 
-export type ViewKey = 'views' | 'games' | 'builds';
-
 /**--- Core Enums & Aliases --------------------------------------**/
-export type EloBracket =
-  | "Iron" | "Bronze" | "Silver" | "Gold"
-  | "Platinum" | "Diamond" | "Master" | "Grandmaster" | "Challenger";
-
+export type ViewKey = 'views' | 'games' | 'builds';
 export type Position = "Top" | "Jungle" | "Mid" | "ADC" | "Support";
-export type SummonerSpell = "Flash" | "Ignite" | "Smite" | "Teleport"
-  | "Heal" | "Barrier" | "Exhaust" | "Ghost" | "Cleanse" | "Revive";
 
 
 /**
@@ -63,7 +56,7 @@ export interface Game {
   champion: ReferenceEntity;
   position: Position;
   build: Build;
-  elo: EloBracket;
+  elo: number;           // We will use our own system for grading elo
   result: "Win" | "Loss";
   tags: string[];
   notes?: string;
@@ -124,4 +117,16 @@ export interface ViewFilter {
   championId?: ReferenceEntity["id"];
   position?: string;
   tagIncludes?: string[];
+}
+
+export interface UpdateBuildEntry {
+  name?: string;
+  filter: BuildFilter;
+  tags: string[];
+  notes?: string;
+}
+
+export interface CreateAccount {
+  name: string;
+  tag: string;
 }

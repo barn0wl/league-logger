@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { ViewConfig } from "../types"
 
 export const useViews = () => {
@@ -7,7 +7,7 @@ export const useViews = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string|null>(null);
 
-    const fetchViews = useCallback(async () => {
+    const fetchViews = useCallback(async (): Promise<void> => {
         setLoading(true);
         setError(null);
     
@@ -25,9 +25,39 @@ export const useViews = () => {
         fetchViews();
     }, [fetchViews]);
 
-    const fetchViewById = useCallback( async (_id: string) => {
-            return {} as ViewConfig
-        }, [])
+    // returns the attributes of a view based on its Id
+    const fetchViewById = useCallback( async (_id: string): Promise<ViewConfig> => {
+      return {} as ViewConfig
+    }, []);
 
-    return { views, loading, error, fetchViews, fetchViewById }
+    // creates a new empty view entry
+    const createView = useCallback( async (): Promise<void> => {
+        throw new Error('no implementaton');
+    }, []);
+
+    //deletes a view
+    const deleteView = useCallback( async (_id: string): Promise<void> => {
+        throw new Error('no implementaton');
+    }, []);
+
+    // duplicates a view
+    const duplicateView = useCallback( async (_id: string): Promise<void> => {
+        throw new Error('no implementaton');
+    }, []);
+
+    // edits the name of a view
+    const editViewName = useCallback( async (_id: string, _name: string)
+    : Promise<void> => {
+        throw new Error('no implementaton');
+    }, []);
+
+    const memoizedViews = useMemo(()=>({
+      views, loading, error, fetchViewById, createView,
+      deleteView, duplicateView, editViewName
+    }), [
+      views, loading, error, fetchViewById, createView,
+      deleteView, duplicateView, editViewName
+    ]);
+
+    return memoizedViews;
 }

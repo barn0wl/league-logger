@@ -8,7 +8,7 @@ interface NavBarProps {
 
 export const NavBar: React.FC<NavBarProps> = ({ current, onChange }) => {
   const links: { key: ViewKey; label: string }[] = [
-    { key: 'views', label: 'Views List' },
+    { key: 'views', label: 'Views' },
     { key: 'games', label: 'Games' },
     { key: 'builds', label: 'Builds' },
   ];
