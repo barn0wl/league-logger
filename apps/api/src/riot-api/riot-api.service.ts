@@ -11,27 +11,63 @@ export class RiotApiService {
   }
 
   /** Fetch an account by its gameName and tag */
-  async get(name: string, tag: string) {
-    return this.client.account.getByRiotId({
+  async getAccountByName(name: string, tag: string) {
+    const res = await this.client.account.getByRiotId({
         region: PlatformId.EUROPE,
         gameName: name,
         tagLine: tag,
     });
+    return res;
   }
 
   async getMatchById(matchId: string) {
-    const data = await this.client.matchV5.getMatchById({
+    const res = await this.client.matchV5.getMatchById({
       cluster: PlatformId.EUROPE,
       matchId: matchId
-    })
+    });
+    return res;
+  }
+
+    async getMatchTimelineById(matchId: string) {
+    const res = await this.client.matchV5.getMatchTimelineById({
+      cluster: PlatformId.EUROPE,
+      matchId: matchId
+    });
+    return res;
   }
 
   /** Fetches all items from DDragon */
   async getItems(version: string) {
-    const data = await this.client.ddragon.items({
+    const res = await this.client.ddragon.items({
       version: version
     });
-    return data;
+    return res;
+  }
+
+  async getChampions(version: string) {
+    const res = await this.client.ddragon.champion.all({
+      version: version
+    });
+    return res;
+  }
+
+  async getRunesReforged(version: string) {
+    const res = await this.client.ddragon.runesReforged({
+      version: version
+    });
+    return res;
+  }
+
+  async getSummonerSpells(version: string) {
+    const res = await this.client.ddragon.summonerSpells({
+      version: version
+    })
+    return res;
+  }
+
+  /** Returns latest version of DDragon */
+  async getDDragonLatestVersion() {
+    return await this.client.ddragon.versions.latest();
   }
 
 }

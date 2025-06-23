@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { RiotApiService } from 'src/riot-api/riot-api.service';
 import { ItemDto } from './dtos/item.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ChampionDto } from './dtos/champion.dto';
+import { ItemType } from './dtos/item.dto';
+import { RuneTreeDto } from './dtos/rune.dto';
+import { SpellDto } from './dtos/spell.dto';
 
 @Injectable()
 export class StaticDataService {
@@ -10,28 +14,256 @@ export class StaticDataService {
         private readonly prisma: PrismaService,
     ) {}
 
-    async fetchLegendaryItems(version: string) : Promise<ItemDto[]> {
-        const data = await this.riot.getItems(version);
-        const legendaryItemsList: ItemDto[] = []
-        Object.entries(data.data).forEach(([key, item]) => {
-            if (item.tags.includes('Legendary')) {
-                const id = key;
-                const name = item.name;
-                const iconUrl = `https://ddragon.leagueoflegends.com/cdn/${version}/img/item/${item.image.full}`;
-                const type = 'Legendary';
-                const itemObj = {
-                    id: id,
-                    name: name,
-                    iconUrl: iconUrl,
-                    type: type,
-                }
-                legendaryItemsList.push(itemObj);
-            }
-        })
-        return legendaryItemsList;
+    /** Function that returns a list of all the legendary items saved in the app's own db */
+    async fetchItems(): Promise<ItemDto[]> {
+        const items = await this.prisma.item.findMany();
+        // Map Prisma items to ItemDto, converting the type
+        return items.map(item => ({
+            id: item.id,
+            name: item.name,
+            iconUrl: item.iconUrl,
+            type: item.type as ItemType // Cast or convert as needed
+        }));
     }
 
-    async saveItems(items: ItemDto[]) : Promise<void> {
-        await this.prisma.item.updateMany() // thank god!!
+    /** Fetches an item in the database whose id is equal to param */
+    async fetchItemById(id: string): Promise<ItemDto|null> {
+        const res = await this.prisma.item.findUnique({
+            where: {id: id}
+        });
+        return res? {
+            id: res.id,
+            name: res.name,
+            iconUrl: res.iconUrl,
+            type: res.type as ItemType
+        } : null
     }
+
+    /** Function that returns a list of all the legendary items from DDragon */
+    async fetchItemsFromRiot(version: string) : Promise<ItemDto[]> {
+        const res = await this.riot.getItems(version);
+        const ItemsList: ItemDto[] = []
+        
+        Object.entries(res.data).forEach(([key, item]) => {
+            // we only save items that are available on map 11 (Summoner's Rift)
+            if (item.maps['11']) {
+                if (item.tags.includes('Boots')) {
+                    // for boots we do not want to count the base Boots or Magical Footwear
+                    if (key !== '1001' && key !== '2422') {
+                        const id = key;
+                        const name = item.name;
+                        const iconUrl = `https://ddragon.leagueoflegends.com/cdn/${version}/img/item/${item.image.full}`;
+                        const itemObj = {
+                            id: id,
+                            name: name,
+                            iconUrl: iconUrl,
+                            type: ItemType.BOOTS
+                        }
+                        ItemsList.push(itemObj);
+                    }
+                }
+                // for the sake of this app, we will assume that legendary items can all build from at least 1 item,
+                // and they dont build into anything else (and are also not boots)
+                else if (!item.into && Array.isArray(item.from) 
+                    && item.from.length > 0 ) {
+                        const id = key;
+                        const name = item.name;
+                        const iconUrl = `https://ddragon.leagueoflegends.com/cdn/${version}/img/item/${item.image.full}`;
+                        const itemObj = {
+                            id: id,
+                            name: name,
+                            iconUrl: iconUrl,
+                            type: ItemType.LEGENDARY
+                        }
+                        ItemsList.push(itemObj);
+                    }
+            }
+        })
+        return ItemsList;
+    }
+
+    async upsertItems(items: ItemDto[]) : Promise<void> {
+        const transactions = items.map(item => {
+        return this.prisma.item.upsert({
+                where: { id: item.id },
+                update: { name: item.name, iconUrl: item.iconUrl },
+                create: {
+                    id: item.id, name: item.name,
+                    iconUrl: item.iconUrl,
+                    type: item.type
+                }
+            });
+        });
+        await this.prisma.$transaction(transactions)
+    }
+
+    /** Function that combines 2 operations to retrieve items from ddragon, and then save them
+     * inside of the app's db. This is the one to call when refreshing data.
+     */
+    async loadItems(version: string): Promise<void> {
+        const items = await this.fetchItemsFromRiot(version);
+        await this.upsertItems(items);
+    }
+
+    async fetchChampionsFromRiot(version: string) : Promise<ChampionDto[]> {
+        const res = await this.riot.getChampions(version);
+        const championsList: ChampionDto[] = []
+        Object.values(res.data).forEach((champ)=> {
+            const id = champ.name;
+            const iconUrl = `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${champ.image.full}`;
+            const championObj = {
+                id: id,
+                iconUrl: iconUrl
+            };
+            championsList.push(championObj);
+        })
+        return championsList;
+    }
+
+    async upsertChampions(champions: ChampionDto[]): Promise<void> {
+        const transactions = champions.map(champ => {
+        return this.prisma.champion.upsert({
+            where: { id: champ.id },
+            update: { iconUrl: champ.iconUrl },
+            create: { id: champ.id, iconUrl: champ.iconUrl }
+            });
+        });
+
+        await this.prisma.$transaction(transactions);
+    }
+
+    async loadChampions(version: string): Promise<void> {
+        const champs = await this.fetchChampionsFromRiot(version);
+        await this.upsertChampions(champs);
+    }
+
+    async fetchRunesFromRiot(version: string): Promise<RuneTreeDto[]> {
+        const res = await this.riot.getRunesReforged(version);
+        const runes = res.map(tree => {
+            const treeId = tree.id.toString();
+            const treeName = tree.name;
+            const treeIconUrl = this.getCommunityDragonIconUrl(tree.icon);
+            const slots = tree.slots;
+            const runes = slots.flatMap( s => s.runes);
+            const runesList = runes.map(r => {
+                const id = r.id.toString();
+                const name = r.name;
+                const iconUrl = this.getCommunityDragonIconUrl(r.icon);
+                return {
+                    id: id, name: name, iconUrl: iconUrl
+                }
+            })
+            return {
+                id: treeId,
+                name: treeName,
+                iconUrl: treeIconUrl,
+                runes: runesList
+            }
+        })
+        return runes;
+    }
+
+    async upsertRunes(runes: RuneTreeDto[]): Promise<void> {
+        // Prepare all data for upsert operations
+        const allTreeIds = runes.map(tree => tree.id);
+        const allRuneIds = runes.flatMap(tree => tree.runes.map(rune => rune.id));
+        await this.prisma.$transaction(async () => {
+            // Upsert all trees first
+            const treeUpserts = runes.map(tree => 
+                this.prisma.runeTree.upsert({
+                where: { id: tree.id },
+                update: { name: tree.name, iconUrl: tree.iconUrl },
+                create: { id: tree.id, name: tree.name, iconUrl: tree.iconUrl }
+                })
+            );
+            await Promise.all(treeUpserts);
+
+            // Upsert all runes
+            const runeUpserts = runes.flatMap(tree => 
+                tree.runes.map(rune => 
+                this.prisma.rune.upsert({
+                    where: { id: rune.id },
+                    update: {
+                    name: rune.name,
+                    iconUrl: rune.iconUrl,
+                    tree: { connect: { id: tree.id } }
+                    },
+                    create: {
+                    id: rune.id,
+                    name: rune.name,
+                    iconUrl: rune.iconUrl,
+                    tree: { connect: { id: tree.id } }
+                    }
+                })
+                )
+            );
+            await Promise.all(runeUpserts);
+
+                  // Step 3: Clean up orphaned records
+            await this.prisma.rune.deleteMany({
+                where: {
+                id: { notIn: allRuneIds },
+                },
+            });
+
+            await this.prisma.runeTree.deleteMany({
+                where: {
+                id: { notIn: allTreeIds },
+                runes: { none: {} }, // Only delete trees with no runes
+                },
+            });
+        })
+        console.log('Runes and trees successfully synchronized');
+    }
+
+    async loadRunes(version: string): Promise<void> {
+        const runes = await this.fetchRunesFromRiot(version);
+        await this.upsertRunes(runes);
+    }
+
+    async fetchSpellsFromRiot(version: string): Promise<SpellDto[]> {
+        const res = await this.riot.getSummonerSpells(version);
+        const summonersList = Object.values(res.data)
+        .filter(e => e.modes.includes('CLASSIC'))  // we only want spells that can be used in SR
+        .map(e => {
+            const id = e.id;
+            const name = e.name;
+            const iconUrl = `https://ddragon.leagueoflegends.com/cdn/${version}/img/spell/${e.image.full}`;
+            return {
+                id: id, name: name, iconUrl: iconUrl
+            }
+        })
+        return summonersList;
+    }
+
+    async upsertSpells(spells: SpellDto[]): Promise<void> {
+        const transactions = spells.map(spell => {
+        return this.prisma.spell.upsert({
+                where: { id: spell.id },
+                update: { name: spell.name, iconUrl: spell.iconUrl },
+                create: {
+                    id: spell.id, name: spell.name,
+                    iconUrl: spell.iconUrl,
+                }
+            });
+        });
+        await this.prisma.$transaction(transactions);
+    }
+
+    async loadSpells(version: string): Promise<void> {
+        const spells = await this.fetchSpellsFromRiot(version);
+        await this.upsertSpells(spells);
+    }
+
+    getCommunityDragonIconUrl(ddragonIconPath: string): string {
+        // Remove the "perk-images/Styles/" prefix
+        const filename = ddragonIconPath.replace('perk-images/Styles/', '');
+        
+        // Convert to lowercase
+        const formattedFilename = filename.toLowerCase();
+        
+        return `https://raw.communitydragon.org/latest/game/assets/perks/styles/${formattedFilename}`;
+    }
+
 }
+

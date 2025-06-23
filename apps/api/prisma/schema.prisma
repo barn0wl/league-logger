@@ -13,9 +13,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Models
+
+enum ItemType {
+  LEGENDARY
+  BOOTS
+}
+
 model Item {
-  id     String @id @default(uuid())
+  id     String @id @default(dbgenerated())
   name    String
   iconUrl   String
-  type     String
+  type     ItemType
+}
+
+model Champion {
+  id    String  @id @default(dbgenerated())
+  iconUrl     String
+}
+
+model Rune {
+  id        String   @id @default(dbgenerated())
+  name      String
+  iconUrl   String
+  treeId    String
+  tree      RuneTree @relation(fields: [treeId], references: [id])
+}
+
+model RuneTree {
+  id        String  @id @default(dbgenerated())
+  name      String
+  iconUrl   String
+  runes     Rune[]
+}
+
+model Spell {
+  id      String  @id @default(dbgenerated())
+  name    String
+  iconUrl   String
 }
