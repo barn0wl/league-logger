@@ -1,9 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PlatformId, RiotAPI } from '@fightmegg/riot-api';
 
 @Injectable()
 export class RiotApiService {
-    private readonly logger = new Logger(RiotApiService.name);
     private readonly client: RiotAPI;
 
   constructor(apiKey: string) {
@@ -17,6 +16,19 @@ export class RiotApiService {
         gameName: name,
         tagLine: tag,
     });
+    return res;
+  }
+
+  async getMatchList(accountId: string, startTime?: number, count?: number) {
+    const res = await this.client.matchV5.getIdsByPuuid({
+      cluster: PlatformId.EUROPE,
+      puuid: accountId,
+      params: {
+        queue: 420, // we only retrieve SR 5v5 ranked games
+        count: count,
+        startTime: startTime
+      }
+    })
     return res;
   }
 

@@ -20,6 +20,14 @@ enum ItemType {
   BOOTS
 }
 
+model AppMetadata {
+  key     String   @id         // e.g. "ddragonVersion"
+  value   String
+  updatedAt DateTime @updatedAt
+
+  @@map("app_metadata")
+}
+
 model Item {
   id     String @id @default(dbgenerated())
   name    String
@@ -51,4 +59,15 @@ model Spell {
   id      String  @id @default(dbgenerated())
   name    String
   iconUrl   String
+}
+
+// --- Account Model ---
+model Account {
+  id          String    @id @default(uuid())  // unique ID (e.g. puuid or internal UUID)
+  name        String
+  tag         String
+  lastFetched DateTime? // timestamp of last game fetch (nullable if never fetched)
+  createdAt   DateTime  @default(now())
+
+  @@map("accounts")
 }

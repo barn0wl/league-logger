@@ -26,7 +26,6 @@ export const STAT_SHARDS = {
     name: "Magic Resist",
     key: "StatModsMagicResIcon",
   },
-  
   // Defense
   5001: {
     id: 5001,
